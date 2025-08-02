@@ -1,0 +1,109 @@
+import React from 'react';
+import useCart from './useCart';
+import Swal from 'sweetalert2';
+import useAxiosSecure from './useAxiosSecure';
+import { Link } from 'react-router-dom';
+
+const Cart = () => {
+    const axiosSecure = useAxiosSecure()
+    const [cart,refetch] = useCart()
+    const totalPrice = cart.reduce((total,item) =>total+item.price,0)
+    const handleDelete = id=>{
+        console.log(id)
+        Swal.fire({
+  title: "Are you sure?",
+  text: "You won't be able to revert this!",
+  icon: "warning",
+  showCancelButton: true,
+  confirmButtonColor: "#3085d6",
+  cancelButtonColor: "#d33",
+  confirmButtonText: "Yes, delete it!"
+}).then((result) => {
+  if (result.isConfirmed) {
+    axiosSecure.delete(`/carts/${id}`)
+    .then(res=>{
+        console.log(res.data)
+        if(res.data.deletedCount>0){
+            refetch()
+             Swal.fire({
+      title: "Deleted!",
+      text: "Your file has been deleted.",
+      icon: "success"
+    });
+        }
+    })
+   
+  }
+});
+    }
+    return (
+        <div>
+            <h2>{cart.length}</h2>
+            <h1>Total Price :{totalPrice}</h1>
+           {cart.length? <Link to='/dashboard/payment'> 
+            <button  className='btn btn-primary'>Pay</button>
+            </Link>
+          : <button disabled className='btn btn-primary'>Pay</button>  
+          }
+            <div>
+                <div className="overflow-x-auto">
+  <table className="table">
+    {/* head */}
+    <thead>
+      <tr>
+        <th>
+          <label>
+            <input type="checkbox" className="checkbox" />
+          </label>
+        </th>
+        <th>Name</th>
+        <th>Job</th>
+        <th>Favorite Color</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {/* row 1 */}
+      {
+        cart.map((item,idx)=><tr key={item._id}> 
+        <th>
+          {idx+1}
+        </th>
+        <td>
+          <div className="flex items-center gap-3">
+            <div className="avatar">
+              <div className="mask mask-squircle h-12 w-12">
+                <img
+                  src={item.image}
+                  alt="Avatar Tailwind CSS Component" />
+              </div>
+            </div>
+            <div>
+              <div className="font-bold">Hart Hagerty</div>
+              <div className="text-sm opacity-50">United States</div>
+            </div>
+          </div>
+        </td>
+        <td>
+          Zemlak, Daniel and Leannon
+          <br />
+          <span className="badge badge-ghost badge-sm">Desktop Support Technician</span>
+        </td>
+        <td>Purple</td>
+        <th>
+          <button onClick={()=>handleDelete(item._id)} className="btn btn-ghost btn-xs">delete</button>
+        </th>
+      </tr>)
+      }
+      
+    </tbody>
+    {/* foot */}
+   
+  </table>
+</div>
+            </div>
+        </div>
+    );
+};
+
+export default Cart;
